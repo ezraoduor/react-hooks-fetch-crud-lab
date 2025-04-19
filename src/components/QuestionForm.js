@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function QuestionForm({ onAddQuestion = () => {} }) {
   const [formData, setFormData] = useState({
@@ -9,6 +9,14 @@ function QuestionForm({ onAddQuestion = () => {} }) {
     answer4: "",
     correctIndex: 0,
   });
+
+  useEffect(() => {
+    let isMounted = true; // Flag to track if the component is mounted
+
+    return () => {
+      isMounted = false; // Cleanup: set the flag to false when the component unmounts
+    };
+  }, []); // Empty dependency array ensures this effect runs only on mount/unmount
 
   function handleChange(event) {
     setFormData({
@@ -42,20 +50,22 @@ function QuestionForm({ onAddQuestion = () => {} }) {
 
       const newQuestion = await response.json();
       
-      // Only call onAddQuestion if it exists
-      if (typeof onAddQuestion === 'function') {
+      // Only call onAddQuestion if the component is still mounted
+      if (isMounted && typeof onAddQuestion === 'function') {
         onAddQuestion(newQuestion);
       }
 
-      // Reset the form
-      setFormData({
-        prompt: "",
-        answer1: "",
-        answer2: "",
-        answer3: "",
-        answer4: "",
-        correctIndex: 0,
-      });
+      // Reset the form only if the component is still mounted
+      if (isMounted) {
+        setFormData({
+          prompt: "",
+          answer1: "",
+          answer2: "",
+          answer3: "",
+          answer4: "",
+          correctIndex: 0,
+        });
+      }
 
     } catch (error) {
       console.error("Error adding question:", error);
